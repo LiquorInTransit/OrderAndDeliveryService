@@ -17,8 +17,11 @@ import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.Delivery;
 import com.gazorpazorp.model.Driver;
 import com.gazorpazorp.model.LineItem;
+import com.gazorpazorp.model.Location;
 import com.gazorpazorp.model.Order;
 import com.gazorpazorp.model.Quote;
+import com.gazorpazorp.model.TrackingEvent;
+import com.gazorpazorp.model.TrackingEventType;
 import com.gazorpazorp.model.dto.DeliveryWithItemsDto;
 import com.gazorpazorp.model.dtoMapper.DeliveryMapper;
 import com.gazorpazorp.repository.DeliveryRepository;
@@ -142,7 +145,7 @@ public class DeliveryService {
 		return delivery;
 	}
 	
-	public DeliveryWithItemsDto assignDelivery (Long deliveryId) {
+	public DeliveryWithItemsDto assignDelivery (Long deliveryId, Location location) {
 		Driver driver = accountClient.getDriver();
 		Delivery delivery = deliveryRepo.findById(deliveryId).orElse(null);
 		if (delivery == null)
@@ -155,6 +158,13 @@ public class DeliveryService {
 		Order order = orderService.getOrderById(delivery.getOrderId(), false);
 		if (order == null)
 			return null;
+		
+		//Create the accepted event
+		TrackingEvent trackingEvent = new TrackingEvent();
+		trackingEvent.setDeliveryId(deliveryId);
+		trackingEvent.setTrackingEventType(TrackingEventType.RECEIVED_DELIVERY);
+		trackingEvent.setLocation(location);
+		deliveryTrackingClient.createTrackingEvent(deliveryId, trackingEvent);
 		return DeliveryMapper.INSTANCE.deliveryAndItemsToDeliveryWithItemsDto(delivery, new ArrayList<LineItem>(order.getItems()));
 	}
 	

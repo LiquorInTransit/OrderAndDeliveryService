@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gazorpazorp.model.Delivery;
+import com.gazorpazorp.model.Location;
 import com.gazorpazorp.model.dto.DeliveryWithItemsDto;
 import com.gazorpazorp.model.dto.QuoteDto;
 import com.gazorpazorp.model.dtoMapper.QuoteMapper;
@@ -72,8 +74,8 @@ public class DeliveryController {
 	
 	@PostMapping
 	@PreAuthorize("#oauth2.hasScope('driver')")
-	public ResponseEntity assignDelivery (@RequestParam("delivery") Long deliveryId) throws Exception{
-		return Optional.ofNullable(deliveryService.assignDelivery(deliveryId))
+	public ResponseEntity assignDelivery (@RequestParam("delivery") Long deliveryId, @RequestBody Location location) throws Exception{
+		return Optional.ofNullable(deliveryService.assignDelivery(deliveryId, location))
 				.map(d -> new ResponseEntity<DeliveryWithItemsDto>(d, HttpStatus.OK))
 				.orElseThrow(() -> new Exception("Could not assign delivery to driver"));
 	}
