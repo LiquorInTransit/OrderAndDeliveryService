@@ -35,9 +35,9 @@ public class OrderController {
 	OrderRepository orderRepository;
 	
 	@PostMapping
-	@PreAuthorize("#oauth2.hasScope('orders')")
-	public ResponseEntity<Order> createOrder (@RequestBody List<LineItem> items, @RequestParam("quote") Long quoteId) throws Exception {
-		return Optional.ofNullable(orderService.createOrder(items, quoteId))
+	@PreAuthorize("#oauth2.hasScope('system')")
+	public ResponseEntity<Order> createOrder (@RequestBody List<LineItem> items, @RequestParam("quote") Long quoteId, @RequestParam("customerId") Long customerId) throws Exception {
+		return Optional.ofNullable(orderService.createOrder(items, quoteId, customerId))
 				.map(o -> new ResponseEntity<Order>(o, HttpStatus.OK))
 				.orElseThrow(() -> new Exception("Could not create order!"));
 	}

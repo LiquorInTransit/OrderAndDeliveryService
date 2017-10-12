@@ -1,6 +1,5 @@
 package com.gazorpazorp.service;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,8 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.gazorpazorp.client.AccountClient;
-import com.gazorpazorp.client.DeliveryClient;
 import com.gazorpazorp.model.Customer;
+import com.gazorpazorp.model.Delivery;
 import com.gazorpazorp.model.LineItem;
 import com.gazorpazorp.model.Order;
 import com.gazorpazorp.repository.LineItemRepository;
@@ -30,8 +29,9 @@ public class OrderService {
 	LineItemRepository lineItemRepo;
 	@Autowired
 	AccountClient accountClient;
+	
 	@Autowired
-	DeliveryClient deliveryClient;
+	DeliveryService deliveryService;
 	
 	private final Logger logger = LoggerFactory.getLogger(OrderService.class);
 	
@@ -65,7 +65,10 @@ public class OrderService {
 		Order order = orderRepository.findCurrentOrderForCustomer(customerId);
 		if (order==null)
 			return null;
-		order.setTrackingURL(deliveryClient.getDeliveryByOrderId(order.getId()).getBody().getTrackingURL());
+		Delivery delivery = deliveryService.getDeliveryByOrderId(order.getId(), false);
+		if (delivery == null)
+			return null;
+		order.setTrackingURL(delivery.getTrackingURL());
 		return order;
 	}
 	
@@ -76,7 +79,7 @@ public class OrderService {
 		if (order == null)
 			return false;
 		orderRepository.delete(order);
-		if (deliveryClient.deleteDeliveryByOrderId(order.getId()).getStatusCode() != HttpStatus.OK) {
+		if (deliveryService.deleteDeliveryByOrderId(order.getId())==null) {
 			logger.error("The delivery failed to delete");
 			throw new Exception("Failed to delete order. Try again later");
 		}
@@ -84,8 +87,8 @@ public class OrderService {
 	}
 	
 	
-	public Order createOrder (List<LineItem> items, Long quoteId) throws Exception {
-		Long customerId = accountClient.getCustomer().getId();
+	public Order createOrder (List<LineItem> items, Long quoteId, Long customerId) throws Exception {
+	//	Long customerId = accountClient.getCustomer().getId();
 		if (orderRepository.findCurrentOrderForCustomer(customerId) != null) {
 			throw new Exception ("Customer already has an active order");
 		}
@@ -111,8 +114,9 @@ public class OrderService {
 	//If something failed, then delete the order we just created, and return null;
 		String trackingURL = "";
 		try {
-			trackingURL = deliveryClient.createDelivery(quoteId, order.getId()).getBody();	
+			trackingURL = deliveryService.createDelivery(quoteId, order.getId());	
 		} catch (Exception e) {
+			e.printStackTrace();
 			//The delivery creation failed
 			orderRepository.deleteById(order.getId());
 			return null;

@@ -1,60 +1,49 @@
 package com.gazorpazorp.model;
 
-public class Customer {
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+
+@Embeddable
+public class Store {
 	private Long id;
 	
-	private String firstName;
-	private String lastName;
-	
-//	private double latitude;
-//	private double longitude;
-	
+	@Embedded
 	private Location location;
 	
-	public Customer() {}
+	public Store() {}
 	
 	public Long getId() {
 		return id;
 	}
-	
-	public String getFirstName() {
-		return firstName;
+	public void setId(Long id) {
+		this.id = id;
 	}
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-
-
 //	public double getLatitude() {
 //		return latitude;
 //	}
-//
 //	public void setLatitude(double latitude) {
 //		this.latitude = latitude;
 //	}
-//
 //	public double getLongitude() {
 //		return longitude;
 //	}
-//
 //	public void setLongitude(double longitude) {
 //		this.longitude = longitude;
 //	}
-
+	
 	public Location getLocation() {
 		return location;
 	}
 	public void setLocation(Location location) {
 		this.location = location;
 	}
+
+	@Override
+	public String toString() {
+		return "Store [id=" + id + ", location=" + location + "]";
+	}
+	
+	
 	
 	
 	
