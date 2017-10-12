@@ -1,6 +1,6 @@
 node {
    stage('Preparation') {
-      git 'https://github.com/LiquorInTransit/OrderService.git'
+      git 'https://github.com/LiquorInTransit/OrderAndDeliveryService.git'
    }
    stage('Build') {
         sh "mvn package"

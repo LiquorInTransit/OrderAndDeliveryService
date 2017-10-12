@@ -1,4 +1,4 @@
-#  Provisions a new order-service
+#  Provisions a new order-and-delivery-service
 #  WOW, tha's pretty neat!
 
 - hosts: localhost
@@ -43,10 +43,10 @@
         region: "{{region}}"
         exact_count: 1 
         count_tag:
-          Name: order-service
+          Name: order-and-delivery-service
           Deploy: New
         instance_tags:
-          Name: order-service
+          Name: order-and-delivery-service
           Deploy: Blue
       register: ec2
 
@@ -82,13 +82,13 @@
 
   - name: Send the deployment across to the new instance
     copy: 
-       src: target/OrderService-0.0.1-SNAPSHOT.jar
+       src: target/OrderAndDeliveryService-0.0.1-SNAPSHOT.jar
        dest: /home/ec2-user/app/target/
        mode: 0700
 
   - name: Build a link to the executable so it becomes a service
     file:
-            src: /home/ec2-user/app/target/OrderService-0.0.1-SNAPSHOT.jar
+            src: /home/ec2-user/app/target/OrderAndDeliveryService-0.0.1-SNAPSHOT.jar
             dest: /etc/init.d/microservice
             state: link
     become: true
@@ -114,7 +114,7 @@
     ec2_remote_facts:
        filters:
           "tag:Deploy": Blue
-          "tag:Name": order-service
+          "tag:Name": order-and-delivery-service
           instance-state-name: running
        region: "{{ region }}"
     register: new_server
@@ -125,7 +125,7 @@
     ec2_remote_facts:
        filters:
           "tag:Deploy": Green
-          "tag:Name": order-service
+          "tag:Name": order-and-delivery-service
           instance-state-name: running
        region: "{{ region }}"
     register: old_green
@@ -160,7 +160,7 @@
       exact_count: 0
       count_tag:
         Deploy: Green
-        Name: order-service
+        Name: order-and-delivery-service
       region: "{{ region }}"
       image: notneeded
 
