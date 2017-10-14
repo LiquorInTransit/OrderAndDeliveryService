@@ -73,7 +73,7 @@ public class OrderController {
 	@DeleteMapping("/current")
 	@PreAuthorize("#oauth2.hasScope('orders')")
 	public ResponseEntity deleteCurrentOrder () throws Exception {
-		orderService.deleteCurrentOrder();
+		orderService.cancelCurrentOrder();
 		return new ResponseEntity(null, HttpStatus.OK);
 	}
 

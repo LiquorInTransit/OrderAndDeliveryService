@@ -1,5 +1,6 @@
 package com.gazorpazorp.service;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.Delivery;
 import com.gazorpazorp.model.LineItem;
 import com.gazorpazorp.model.Order;
+import com.gazorpazorp.model.OrderStatus;
 import com.gazorpazorp.repository.LineItemRepository;
 import com.gazorpazorp.repository.OrderRepository;
 
@@ -35,9 +37,11 @@ public class OrderService {
 	
 	private final Logger logger = LoggerFactory.getLogger(OrderService.class);
 	
+	private static final OrderStatus[] TERMINATING_ORDER_STATUSES = {OrderStatus.COMPLETED, OrderStatus.CANCELLED};
+	
 	public List<Order> getAllOrdersForCustomer() {
 		Long customerId = accountClient.getCustomer().getId();
-		return orderRepo.findByCustomerId(customerId).stream().filter(o -> "complete".equals(o.getStatus())).collect(Collectors.toList());
+		return orderRepo.findByCustomerId(customerId).stream().filter(o -> OrderStatus.COMPLETED.equals(o.getStatus())).collect(Collectors.toList());
 	}
 
 	public Order getOrderById(Long orderId, boolean verify) {
@@ -62,7 +66,7 @@ public class OrderService {
 	
 	public Order getCurrentOrder() {
 		Long customerId = accountClient.getCustomer().getId();
-		Order order = orderRepo.findCurrentOrderForCustomer(customerId);
+		Order order = orderRepo.findByCustomerIdAndStatusNotIn(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES));
 		if (order==null)
 			return null;
 		Delivery delivery = deliveryService.getDeliveryByOrderId(order.getId(), false);
@@ -73,23 +77,32 @@ public class OrderService {
 	}
 	
 	@Transactional(rollbackOn= {Exception.class} )
-	public boolean deleteCurrentOrder() throws Exception {
+	public boolean cancelCurrentOrder() throws Exception {
 		Long accountId = accountClient.getCustomer().getId();
-		Order order = orderRepo.findCurrentOrderForCustomer(accountId);
+		Order order = orderRepo.findByCustomerIdAndStatusNotIn(accountId, Arrays.asList(TERMINATING_ORDER_STATUSES));
 		if (order == null)
 			return false;
-		orderRepo.delete(order);
-		if (deliveryService.deleteDeliveryByOrderId(order.getId())==null) {
+		order.setStatus(OrderStatus.CANCELLED);
+		orderRepo.save(order);
+		if (deliveryService.cancelDeliveryByOrderId(order.getId())==null) {
 			logger.error("The delivery failed to delete");
 			throw new Exception("Failed to delete order. Try again later");
 		}
 		return true;
 	}
 	
+	public boolean cancelOrderByOrderId (Long orderId) throws Exception {
+		Order order = orderRepo.findById(orderId).orElse(null);
+		if (order == null)
+			throw new Exception("Order with ID " + orderId + " does not exist");
+		order.setStatus(OrderStatus.CANCELLED);
+		return true;
+	}
+	
 	
 	public Order createOrder (List<LineItem> items, Long quoteId, Long customerId) throws Exception {
 	//	Long customerId = accountClient.getCustomer().getId();
-		if (orderRepo.findCurrentOrderForCustomer(customerId) != null) {
+		if (orderRepo.findByCustomerIdAndStatusNotIn(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES)) != null) {
 			throw new Exception ("Customer already has an active order");
 		}
 		Order order = new Order();
@@ -102,7 +115,7 @@ public class OrderService {
 		//Remove Delivery Info
 		order.setItems(new HashSet<LineItem>(items));
 		order.setTotal(items.stream().mapToDouble(li -> li.getPrice()*(li.getQty()*1.0)).sum());
-		order.setStatus("picking_items");
+		order.setStatus(OrderStatus.ACTIVE);
 //		order.setCreatedAt(new Date());
 		order = orderRepo.saveAndFlush(order);
 	//Create delivery from quote
@@ -123,7 +136,7 @@ public class OrderService {
 	
 	public Boolean completeOrder(Long orderId) throws Exception {
 		Order order = orderRepo.findById(orderId).orElseThrow(() -> new Exception("Order of ID" + orderId + " does not exist"));
-		order.setStatus("complete");
+		order.setStatus(OrderStatus.COMPLETED);
 		orderRepo.save(order);
 		return true;
 	}

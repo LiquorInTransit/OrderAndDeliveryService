@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.gazorpazorp.model.Delivery;
+import com.gazorpazorp.model.DeliveryStatus;
 
 public interface DeliveryRepository extends JpaRepository<Delivery, Long>{
 	public Delivery findByOrderId(@Param("orderId") Long orderId);
@@ -20,6 +21,6 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long>{
 	@Query("select d from Delivery d where d.driverId is null and d.driverHold is null and ?1 not member d.driverBlacklist order by d.createdAt asc")
 	public List<Delivery> findTopByDriverIdIsNullAndDriverHoldIsNullOrderByCreatedAtAsc(Long driverId);
 	
-	@Query("select d from Delivery d where d.driverId = ?1 and status != 'complete'")
-	public Delivery findCurrentDeliveryForDriver(Long driverId);
+	//@Query("select d from Delivery d where d.driverId = ?1 and status != 'complete'")
+	public Delivery findByDriverIdAndStatusNotIn(@Param("driverId") Long driverId, @Param("status")List<DeliveryStatus> terminatingStatuses);
 }

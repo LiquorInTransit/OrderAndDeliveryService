@@ -53,7 +53,7 @@ public class DeliveryController {
 	public ResponseEntity getDriverDeliveryHistory () throws Exception {
 		return Optional.ofNullable(deliveryService.getDriverHistory())
 				.map(d -> new ResponseEntity<List<Delivery>>(d, HttpStatus.OK))
-				.orElseThrow(() -> new Exception("No past deliveries for driver."));
+				.orElseThrow(() -> new Exception("No current delivery for driver."));
 	}
 	
 	@GetMapping("/current")
@@ -62,6 +62,14 @@ public class DeliveryController {
 		return Optional.ofNullable(deliveryService.getDriverCurrentDelivery())
 				.map(d -> new ResponseEntity<DeliveryWithItemsDto>(d, HttpStatus.OK))
 				.orElseThrow(() -> new Exception("No past deliveries for driver."));
+	}
+	
+	@DeleteMapping("/current")
+	@PreAuthorize("#oauth2.hasScope('driver') and hasRole('DRIVER')")
+	public ResponseEntity cancelCurrentDelivery () throws Exception {
+		return Optional.ofNullable(deliveryService.cancelCurrentDelivery())
+				.map(d -> new ResponseEntity(HttpStatus.OK))
+				.orElseThrow(() -> new Exception("Failed to cancel delivery"));
 	}
 	
 	@GetMapping

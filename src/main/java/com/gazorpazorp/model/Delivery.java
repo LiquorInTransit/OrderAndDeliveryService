@@ -7,6 +7,8 @@ import java.util.List;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.PrePersist;
@@ -41,7 +43,8 @@ public class Delivery {
 //	private List<LineItem> items;
 	
 	private Double fee;
-	private String status;
+	@Enumerated(EnumType.STRING)
+	private DeliveryStatus status;
 	
 	//private String trackingURL;
 	private String trackingId;
@@ -139,10 +142,10 @@ public class Delivery {
 		this.fee = fee;
 	}
 
-	public String getStatus() {
+	public DeliveryStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(DeliveryStatus status) {
 		this.status = status;
 	}
 

@@ -7,6 +7,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -28,7 +30,8 @@ public class Order {
 //	private String deliveryLocation;
 //	private String storeLocation;
 	private double total;
-	private String status;
+	@Enumerated(EnumType.STRING)
+	private OrderStatus status;
 	
 	private Set<LineItem> items;
 	
@@ -89,10 +92,10 @@ public class Order {
 //	}
 
 	@Column(name="status")
-	public String getStatus() {
+	public OrderStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(OrderStatus status) {
 		this.status = status;
 	}
 

@@ -1,6 +1,7 @@
 package com.gazorpazorp.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,10 +16,12 @@ import com.gazorpazorp.client.DeliveryTrackingClient;
 import com.gazorpazorp.client.GatewayClient;
 import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.Delivery;
+import com.gazorpazorp.model.DeliveryStatus;
 import com.gazorpazorp.model.Driver;
 import com.gazorpazorp.model.LineItem;
 import com.gazorpazorp.model.Location;
 import com.gazorpazorp.model.Order;
+import com.gazorpazorp.model.OrderStatus;
 import com.gazorpazorp.model.Quote;
 import com.gazorpazorp.model.TrackingEvent;
 import com.gazorpazorp.model.TrackingEventType;
@@ -43,6 +46,9 @@ public class DeliveryService {
 	GatewayClient accountClient;
 	@Autowired
 	DeliveryTrackingClient deliveryTrackingClient;
+	
+	private static final DeliveryStatus[] TERMINATING_DELIVERY_STATUSES = {DeliveryStatus.DELIVERED, DeliveryStatus.CANCELLED};
+	
 
 	// @Autowired
 	// DeliveryTrackerClient deliveryTrackerClient;
@@ -56,7 +62,7 @@ public class DeliveryService {
 		delivery.setQuoteId(quote.getId());
 		delivery.setOrderId(orderId);
 		delivery.setFee(quote.getFee());
-		delivery.setStatus("");
+		delivery.setStatus(DeliveryStatus.ACTIVE);
 		delivery = deliveryRepo.save(delivery);
 		// TODO: REMOVE THIS AWFUL TESTING SHIT
 		try {
@@ -108,13 +114,26 @@ public class DeliveryService {
 	}
 	
 	@Transactional
-	public Boolean deleteDeliveryByOrderId(Long orderId) {
-		deliveryRepo.deleteByOrderId(orderId);
+	public Boolean cancelDeliveryByOrderId(Long orderId) throws Exception {
+		//deliveryRepo.deleteByOrderId(orderId);
 		Delivery delivery = deliveryRepo.findByOrderId(orderId);
 		if (delivery == null)
-			return true;
-
-		return null;
+			throw new Exception("Delivery with order ID " + orderId + " does not exist");
+		delivery.setStatus(DeliveryStatus.CANCELLED);
+		deliveryRepo.save(delivery);
+		return true;
+	}
+	
+	@Transactional(rollbackOn= {Exception.class} )
+	public Boolean cancelCurrentDelivery() throws Exception {
+		Driver driver = accountClient.getDriver();
+		Delivery delivery = deliveryRepo.findByDriverIdAndStatusNotIn(driver.getId(), Arrays.asList(TERMINATING_DELIVERY_STATUSES));
+		if (delivery == null)
+			throw new Exception ("The driver does not have a current delivery");
+		delivery.setStatus(DeliveryStatus.CANCELLED);
+		deliveryRepo.save(delivery);
+		orderService.cancelOrderByOrderId(delivery.getOrderId());
+		return true;
 	}
 	
 	//Not sure if this method even works...
@@ -128,7 +147,7 @@ public class DeliveryService {
 	
 	public DeliveryWithItemsDto getDriverCurrentDelivery() {
 		Driver driver = accountClient.getDriver();
-		Delivery delivery = deliveryRepo.findCurrentDeliveryForDriver(driver.getId());
+		Delivery delivery = deliveryRepo.findByDriverIdAndStatusNotIn(driver.getId(), Arrays.asList(TERMINATING_DELIVERY_STATUSES));
 		if (delivery == null)
 			return null;
 		Order order = orderService.getOrderById(delivery.getOrderId(), false);
@@ -139,8 +158,10 @@ public class DeliveryService {
 	
 	public Delivery findOpen() {
 		Driver driver = accountClient.getDriver();
-		if ( !deliveryRepo.findByDriverId(driver.getId()).stream().filter(d -> !"complete".equals(d.getStatus())).collect(Collectors.toList()).isEmpty())
+		if (getDriverCurrentDelivery() != null)
 			return null;
+//		if ( !deliveryRepo.findByDriverId(driver.getId()).stream().filter(d -> DeliveryStatus.ACTIVE.equals(d.getStatus())).collect(Collectors.toList()).isEmpty())
+//			return null;
 		List<Delivery> openDeliveries = deliveryRepo.findTopByDriverIdIsNullAndDriverHoldIsNullOrderByCreatedAtAsc(driver.getId());
 		Delivery delivery = openDeliveries.isEmpty()?null:openDeliveries.get(0);
 		if (delivery != null) {
@@ -193,7 +214,7 @@ public class DeliveryService {
 	public Boolean completeDelivery(Long deliveryId) throws Exception{
 		Delivery delivery = deliveryRepo.findById(deliveryId)
 				.orElseThrow(() -> new Exception ("Delivery with ID " + deliveryId + " does not exist"));
-		delivery.setStatus("complete");
+		delivery.setStatus(DeliveryStatus.DELIVERED);
 		if (orderService.completeOrder(delivery.getOrderId())) {	
 			deliveryRepo.save(delivery);
 			return true;
