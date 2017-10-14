@@ -1,10 +1,11 @@
 package com.gazorpazorp.client;
 
+import java.util.UUID;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.gazorpazorp.client.config.TokenRequestClientConfiguration;
@@ -18,5 +19,5 @@ public interface DeliveryTrackingClient {
 	
 	@Async
 	@PostMapping("/internal/tracking/{id}")
-	public void createTrackingEvent(@PathVariable("id") Long trackingId, TrackingEvent trackingEvent);
+	public void createTrackingEvent(@PathVariable("id") String trackingId, TrackingEvent trackingEvent);
 }

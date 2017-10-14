@@ -16,6 +16,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class Delivery {
@@ -42,7 +43,8 @@ public class Delivery {
 	private Double fee;
 	private String status;
 	
-	private String trackingURL;
+	//private String trackingURL;
+	private String trackingId;
 	
 	
 	public Delivery () {}
@@ -144,11 +146,20 @@ public class Delivery {
 		this.status = status;
 	}
 
+	@Transient
+	@JsonProperty(access=JsonProperty.Access.READ_ONLY)
 	public String getTrackingURL() {
-		return trackingURL;
+		return "www.liquorintransit.party/api/tracking/"+this.trackingId;//trackingURL;
 	}
-	public void setTrackingURL(String trackingURL) {
-		this.trackingURL = trackingURL;
+//	public void setTrackingURL(String trackingURL) {
+//		this.trackingURL = trackingURL;
+//	}
+
+	public String getTrackingId() {
+		return trackingId;
+	}
+	public void setTrackingId(String trackingId) {
+		this.trackingId = trackingId;
 	}
 	
 	

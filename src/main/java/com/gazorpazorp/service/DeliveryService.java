@@ -47,7 +47,7 @@ public class DeliveryService {
 	// @Autowired
 	// DeliveryTrackerClient deliveryTrackerClient;
 
-	public String createDelivery(Long quoteId, Long orderId) {
+	public String createDelivery(Long quoteId, Long orderId) throws Exception{
 		Quote quote = quoteRepo.findById(quoteId).get();
 
 		Delivery delivery = new Delivery();
@@ -59,7 +59,12 @@ public class DeliveryService {
 		delivery.setStatus("");
 		delivery = deliveryRepo.save(delivery);
 		// TODO: REMOVE THIS AWFUL TESTING SHIT
-		delivery.setTrackingURL(deliveryTrackingClient.createNewEvent(delivery.getId()));
+		try {
+		delivery.setTrackingId(deliveryTrackingClient.createNewEvent(delivery.getId()));
+		} catch (Exception e) {
+			throw new Exception("Failed to creating tracking information");
+		}
+		//delivery.setTrackingURL(deliveryTrackingClient.createNewEvent(delivery.getId()));
 		// delivery.setTrackingURL(deliveryTrackerClient.track(delivery.getId()))
 		// if (delivery.getTrackingURL() != null)
 		deliveryRepo.save(delivery);
@@ -164,7 +169,7 @@ public class DeliveryService {
 		trackingEvent.setDeliveryId(deliveryId);
 		trackingEvent.setTrackingEventType(TrackingEventType.RECEIVED_DELIVERY);
 		trackingEvent.setLocation(location);
-		deliveryTrackingClient.createTrackingEvent(deliveryId, trackingEvent);
+		deliveryTrackingClient.createTrackingEvent(delivery.getTrackingId(), trackingEvent);
 		return DeliveryMapper.INSTANCE.deliveryAndItemsToDeliveryWithItemsDto(delivery, new ArrayList<LineItem>(order.getItems()));
 	}
 	
