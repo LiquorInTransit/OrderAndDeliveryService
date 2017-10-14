@@ -190,6 +190,17 @@ public class DeliveryService {
 	}
 	
 	
+	public Boolean completeDelivery(Long deliveryId) throws Exception{
+		Delivery delivery = deliveryRepo.findById(deliveryId)
+				.orElseThrow(() -> new Exception ("Delivery with ID " + deliveryId + " does not exist"));
+		delivery.setStatus("complete");
+		if (orderService.completeOrder(delivery.getOrderId())) {	
+			deliveryRepo.save(delivery);
+			return true;
+		} 
+		return false;
+	}
+	
 	
 	
 	

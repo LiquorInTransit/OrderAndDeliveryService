@@ -24,7 +24,7 @@ import com.gazorpazorp.repository.OrderRepository;
 public class OrderService {
 
 	@Autowired
-	OrderRepository orderRepository;
+	OrderRepository orderRepo;
 	@Autowired
 	LineItemRepository lineItemRepo;
 	@Autowired
@@ -37,12 +37,12 @@ public class OrderService {
 	
 	public List<Order> getAllOrdersForCustomer() {
 		Long customerId = accountClient.getCustomer().getId();
-		return orderRepository.findByCustomerId(customerId).stream().filter(o -> "complete".equals(o.getStatus())).collect(Collectors.toList());
+		return orderRepo.findByCustomerId(customerId).stream().filter(o -> "complete".equals(o.getStatus())).collect(Collectors.toList());
 	}
 
 	public Order getOrderById(Long orderId, boolean verify) {
 		//Get the order
-		Order order = orderRepository.findById(orderId).get();
+		Order order = orderRepo.findById(orderId).get();
 		
 		//validate that the accountId of the order belongs to the user
 		if (verify) {
@@ -62,7 +62,7 @@ public class OrderService {
 	
 	public Order getCurrentOrder() {
 		Long customerId = accountClient.getCustomer().getId();
-		Order order = orderRepository.findCurrentOrderForCustomer(customerId);
+		Order order = orderRepo.findCurrentOrderForCustomer(customerId);
 		if (order==null)
 			return null;
 		Delivery delivery = deliveryService.getDeliveryByOrderId(order.getId(), false);
@@ -75,10 +75,10 @@ public class OrderService {
 	@Transactional(rollbackOn= {Exception.class} )
 	public boolean deleteCurrentOrder() throws Exception {
 		Long accountId = accountClient.getCustomer().getId();
-		Order order = orderRepository.findCurrentOrderForCustomer(accountId);
+		Order order = orderRepo.findCurrentOrderForCustomer(accountId);
 		if (order == null)
 			return false;
-		orderRepository.delete(order);
+		orderRepo.delete(order);
 		if (deliveryService.deleteDeliveryByOrderId(order.getId())==null) {
 			logger.error("The delivery failed to delete");
 			throw new Exception("Failed to delete order. Try again later");
@@ -89,14 +89,9 @@ public class OrderService {
 	
 	public Order createOrder (List<LineItem> items, Long quoteId, Long customerId) throws Exception {
 	//	Long customerId = accountClient.getCustomer().getId();
-		if (orderRepository.findCurrentOrderForCustomer(customerId) != null) {
+		if (orderRepo.findCurrentOrderForCustomer(customerId) != null) {
 			throw new Exception ("Customer already has an active order");
 		}
-		
-
-	
-		
-		
 		Order order = new Order();
 		for (int x = 0; x<items.size(); x++)
 			items.get(x).setOrder(order);
@@ -109,7 +104,7 @@ public class OrderService {
 		order.setTotal(items.stream().mapToDouble(li -> li.getPrice()*(li.getQty()*1.0)).sum());
 		order.setStatus("picking_items");
 //		order.setCreatedAt(new Date());
-		order = orderRepository.saveAndFlush(order);
+		order = orderRepo.saveAndFlush(order);
 	//Create delivery from quote
 	//If something failed, then delete the order we just created, and return null;
 		String trackingURL = "";
@@ -118,12 +113,19 @@ public class OrderService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			//The delivery creation failed
-			orderRepository.deleteById(order.getId());
+			orderRepo.deleteById(order.getId());
 			return null;
 		}
 		
 		order.setTrackingURL(trackingURL);
 		return order;
+	}
+	
+	public Boolean completeOrder(Long orderId) throws Exception {
+		Order order = orderRepo.findById(orderId).orElseThrow(() -> new Exception("Order of ID" + orderId + " does not exist"));
+		order.setStatus("complete");
+		orderRepo.save(order);
+		return true;
 	}
 	
 
