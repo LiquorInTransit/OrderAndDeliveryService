@@ -152,7 +152,7 @@ public class Delivery {
 	@Transient
 	@JsonProperty(access=JsonProperty.Access.READ_ONLY)
 	public String getTrackingURL() {
-		return "www.liquorintransit.party/api/tracking/"+this.trackingId;//trackingURL;
+		return "http://www.liquorintransit.party/api/tracking/"+this.trackingId;//trackingURL;
 	}
 //	public void setTrackingURL(String trackingURL) {
 //		this.trackingURL = trackingURL;

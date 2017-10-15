@@ -41,7 +41,7 @@ public class OrderService {
 	
 	public List<Order> getAllOrdersForCustomer() {
 		Long customerId = accountClient.getCustomer().getId();
-		return orderRepo.findByCustomerId(customerId).stream().filter(o -> OrderStatus.COMPLETED.equals(o.getStatus())).collect(Collectors.toList());
+		return orderRepo.findByCustomerIdOrderByCreatedAt(customerId).stream().filter(o -> OrderStatus.COMPLETED.equals(o.getStatus())).collect(Collectors.toList());
 	}
 
 	public Order getOrderById(Long orderId, boolean verify) {
