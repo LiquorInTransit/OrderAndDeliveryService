@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.gazorpazorp.model.Store;
 
-@FeignClient(name="store-service")
+@FeignClient(name="product-and-store-service")
 public interface StoreClient {
 	
 	@GetMapping("/api/stores/locate")
