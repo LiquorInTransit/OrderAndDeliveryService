@@ -53,7 +53,7 @@ public class DeliveryController {
 	public ResponseEntity getDriverDeliveryHistory () throws Exception {
 		return Optional.ofNullable(deliveryService.getDriverHistory())
 				.map(d -> new ResponseEntity<List<Delivery>>(d, HttpStatus.OK))
-				.orElseThrow(() -> new Exception("No current delivery for driver."));
+				.orElseThrow(() -> new Exception("No past deliveries for driver."));
 	}
 	
 	@GetMapping("/current")
@@ -61,7 +61,7 @@ public class DeliveryController {
 	public ResponseEntity getDriverCurrentDelivery () throws Exception {
 		return Optional.ofNullable(deliveryService.getDriverCurrentDelivery())
 				.map(d -> new ResponseEntity<DeliveryWithItemsDto>(d, HttpStatus.OK))
-				.orElseThrow(() -> new Exception("No past deliveries for driver."));
+				.orElseThrow(() -> new Exception("No current delivery for driver."));
 	}
 	
 	@DeleteMapping("/current")
