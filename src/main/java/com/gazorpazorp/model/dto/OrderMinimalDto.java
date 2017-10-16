@@ -1,13 +1,15 @@
 package com.gazorpazorp.model.dto;
 
 import java.sql.Timestamp;
-import java.util.Date;
+
+import com.gazorpazorp.model.OrderStatus;
 
 public class OrderMinimalDto {
 	private Long id;
 	private double total;
 	private Timestamp createdAt;
-	private String status;
+	
+	private OrderStatus status;
 	
 	
 	public Long getId() {
@@ -31,10 +33,10 @@ public class OrderMinimalDto {
 		this.createdAt = createdAt;
 	}
 	
-	public String getStatus() {
+	public OrderStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(OrderStatus status) {
 		this.status = status;
 	}
 	

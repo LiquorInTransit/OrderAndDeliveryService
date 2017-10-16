@@ -40,8 +40,8 @@ public class OrderService {
 	private static final OrderStatus[] TERMINATING_ORDER_STATUSES = {OrderStatus.COMPLETED, OrderStatus.CANCELLED};
 	
 	public List<Order> getAllOrdersForCustomer() {
-		Long customerId = accountClient.getCustomer().getId();
-		return orderRepo.findByCustomerIdOrderByCreatedAt(customerId).stream().filter(o -> OrderStatus.COMPLETED.equals(o.getStatus())).collect(Collectors.toList());
+		Long customerId = accountClient.getCustomer().getId();								//add the CANCELLED status to the valid types
+		return orderRepo.findByCustomerIdAndStatusInOrderByCreatedAt(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES));
 	}
 
 	public Order getOrderById(Long orderId, boolean verify) {
