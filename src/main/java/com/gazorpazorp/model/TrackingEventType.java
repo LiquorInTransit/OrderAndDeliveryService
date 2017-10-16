@@ -8,5 +8,5 @@ public enum TrackingEventType {
     UPDATE_LOCATION,
     ARRIVING,
     DELIVERED,
-    CANCELED
+    CANCELLED
 }
