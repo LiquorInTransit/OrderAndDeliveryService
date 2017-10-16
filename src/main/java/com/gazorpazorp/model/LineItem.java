@@ -12,6 +12,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name="LINE_ITEM")
@@ -21,6 +22,8 @@ public class LineItem {
 	private Long productId;
 	private String productName;
 	private String imageThumbUrl;
+	private String producerName;
+	private String packageType;
 	private Double price;
 	private Integer qty;
 	
@@ -68,6 +71,22 @@ public class LineItem {
 	}
 	public void setImageThumbUrl(String imageThumbUrl) {
 		this.imageThumbUrl = imageThumbUrl;
+	}
+	
+	@JsonProperty("producer_name")
+	public String getProducerName() {
+		return producerName;
+	}
+	public void setProducerName(String producerName) {
+		this.producerName = producerName;
+	}
+	
+	@JsonProperty("package")
+	public String getPackageType() {
+		return packageType;
+	}
+	public void setPackageType(String packageType) {
+		this.packageType = packageType;
 	}
 
 	@Column(name="price")
