@@ -125,9 +125,9 @@ public class DeliveryService {
 	}
 	
 	@Transactional(rollbackOn= {Exception.class} )
-	public Boolean cancelCurrentDelivery() throws Exception {
-		Driver driver = accountClient.getDriver();
-		Delivery delivery = deliveryRepo.findByDriverIdAndStatusNotIn(driver.getId(), Arrays.asList(TERMINATING_DELIVERY_STATUSES));
+	public Boolean cancelDeliveryById(Long deliveryId) throws Exception {
+//		Driver driver = accountClient.getDriver();
+		Delivery delivery = deliveryRepo.findById(deliveryId).orElse(null);//deliveryRepo.findByDriverIdAndStatusNotIn(driver.getId(), Arrays.asList(TERMINATING_DELIVERY_STATUSES));
 		if (delivery == null)
 			throw new Exception ("The driver does not have a current delivery");
 		delivery.setStatus(DeliveryStatus.CANCELLED);
