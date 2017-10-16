@@ -145,7 +145,7 @@ public class DeliveryService {
 		return deliveryRepo.findByDriverId(accountClient.getDriver().getId());
 	}
 	
-	public DeliveryWithItemsDto getDriverCurrentDelivery() {
+	public DeliveryWithItemsDto getDriverCurrentDelivery() throws Exception{
 		Driver driver = accountClient.getDriver();
 		Delivery delivery = deliveryRepo.findByDriverIdAndStatusNotIn(driver.getId(), Arrays.asList(TERMINATING_DELIVERY_STATUSES));
 		if (delivery == null)
@@ -153,10 +153,11 @@ public class DeliveryService {
 		Order order = orderService.getOrderById(delivery.getOrderId(), false);
 		if (order == null)
 			return null;
+		orderService.aggregateOrderItems(order);
 		return DeliveryMapper.INSTANCE.deliveryAndItemsToDeliveryWithItemsDto(delivery, new ArrayList<LineItem>(order.getItems()));
 	}
 	
-	public Delivery findOpen() {
+	public Delivery findOpen() throws Exception {
 		Driver driver = accountClient.getDriver();
 		if (getDriverCurrentDelivery() != null)
 			return null;
@@ -171,7 +172,7 @@ public class DeliveryService {
 		return delivery;
 	}
 	
-	public DeliveryWithItemsDto assignDelivery (Long deliveryId, Location location) {
+	public DeliveryWithItemsDto assignDelivery (Long deliveryId, Location location) throws Exception{
 		Driver driver = accountClient.getDriver();
 		Delivery delivery = deliveryRepo.findById(deliveryId).orElse(null);
 		if (delivery == null)
@@ -191,6 +192,7 @@ public class DeliveryService {
 		trackingEvent.setTrackingEventType(TrackingEventType.RECEIVED_DELIVERY);
 		trackingEvent.setLocation(location);
 		deliveryTrackingClient.createTrackingEvent(delivery.getTrackingId(), trackingEvent);
+		orderService.aggregateOrderItems(order);
 		return DeliveryMapper.INSTANCE.deliveryAndItemsToDeliveryWithItemsDto(delivery, new ArrayList<LineItem>(order.getItems()));
 	}
 	

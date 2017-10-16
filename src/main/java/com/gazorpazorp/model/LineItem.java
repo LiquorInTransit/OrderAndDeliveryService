@@ -8,24 +8,22 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name="LINE_ITEM")
 public class LineItem {
 	private Long id;
 	private Order order;
+
+	@JsonIgnore
 	private Long productId;
-	private String productName;
-	private String imageThumbUrl;
-	private String producerName;
-	private String packageType;
-	private Double price;
-	private Integer qty;
+	private Product product;
+	private int qty;
 	
 	public LineItem() {}
 	
@@ -58,58 +56,29 @@ public class LineItem {
 		this.productId = productId;
 	}
 	
-	@Column(name="product_name")
-	public String getProductName() {
-		return productName;
+	@Transient
+	public Product getProduct() {
+		return product;
 	}
-	public void setProductName(String productName) {
-		this.productName = productName;
-	}
-	
-	public String getImageThumbUrl() {
-		return imageThumbUrl;
-	}
-	public void setImageThumbUrl(String imageThumbUrl) {
-		this.imageThumbUrl = imageThumbUrl;
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 	
-	@JsonProperty("producer_name")
-	public String getProducerName() {
-		return producerName;
-	}
-	public void setProducerName(String producerName) {
-		this.producerName = producerName;
-	}
-	
-	@JsonProperty("package")
-	public String getPackageType() {
-		return packageType;
-	}
-	public void setPackageType(String packageType) {
-		this.packageType = packageType;
-	}
-
-	@Column(name="price")
-	public Double getPrice() {
-		return price;
-	}
-	public void setPrice(Double price) {
-		this.price = price;
-	}
-	
-	@Column(name="qty")
-	public Integer getQty() {
+	public int getQty() {
 		return qty;
 	}
-	public void setQty(Integer qty) {
+	public void setQty(int qty) {
 		this.qty = qty;
 	}
 
 	@Override
 	public String toString() {
-		return "LineItem [id=" + id + ", order=" + order + ", productId=" + productId + ", productName=" + productName
-				+ ", price=" + price + ", qty=" + qty + "]\n";
+		return "LineItem [id=" + id + ", order=" + order + ", productId=" + productId + ", product=" + product
+				+ ", qty=" + qty + "]";
 	}
+
+
+	
 
 
 }

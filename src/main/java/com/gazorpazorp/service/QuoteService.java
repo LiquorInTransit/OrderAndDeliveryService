@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gazorpazorp.client.GatewayClient;
-import com.gazorpazorp.client.StoreClient;
+import com.gazorpazorp.client.ProductAndStoreClient;
 import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.Dropoff;
 import com.gazorpazorp.model.Pickup;
@@ -27,7 +27,7 @@ public class QuoteService {
 	@Autowired
 	GatewayClient acctClient;
 	@Autowired
-	StoreClient storeClient;
+	ProductAndStoreClient storeClient;
 	
 	public Quote createQuote () throws Exception {
 		Quote quote = new Quote();

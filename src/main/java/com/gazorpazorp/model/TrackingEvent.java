@@ -15,8 +15,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Entity
-@Table(name = "tracking_event")
 public class TrackingEvent {
 
 	@JsonIgnore

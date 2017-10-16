@@ -3,6 +3,7 @@ package com.gazorpazorp.service;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -10,15 +11,16 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.gazorpazorp.client.AccountClient;
+import com.gazorpazorp.client.ProductAndStoreClient;
 import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.Delivery;
 import com.gazorpazorp.model.LineItem;
 import com.gazorpazorp.model.Order;
 import com.gazorpazorp.model.OrderStatus;
+import com.gazorpazorp.model.Product;
 import com.gazorpazorp.repository.LineItemRepository;
 import com.gazorpazorp.repository.OrderRepository;
 
@@ -29,8 +31,11 @@ public class OrderService {
 	OrderRepository orderRepo;
 	@Autowired
 	LineItemRepository lineItemRepo;
+	
 	@Autowired
 	AccountClient accountClient;
+	@Autowired
+	ProductAndStoreClient productClient;
 	
 	@Autowired
 	DeliveryService deliveryService;
@@ -44,10 +49,11 @@ public class OrderService {
 		return orderRepo.findByCustomerIdAndStatusInOrderByCreatedAt(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES));
 	}
 
-	public Order getOrderById(Long orderId, boolean verify) {
+	public Order getOrderById(Long orderId, boolean verify) throws Exception{
 		//Get the order
-		Order order = orderRepo.findById(orderId).get();
-		
+		Order order = orderRepo.findById(orderId).orElse(null);
+		if (order==null)
+			throw new Exception("Order with ID " + orderId + " does not exist");
 		//validate that the accountId of the order belongs to the user
 		if (verify) {
 			try {
@@ -61,6 +67,7 @@ public class OrderService {
 //		if (order==null)
 //			return null;
 //		order.setTrackingURL(deliveryClient.getDeliveryByOrderId(order.getId()).getBody().getTrackingURL());
+		aggregateOrderItems(order);
 		return order;
 	}
 	
@@ -69,6 +76,7 @@ public class OrderService {
 		Order order = orderRepo.findByCustomerIdAndStatusNotIn(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES));
 		if (order==null)
 			return null;
+		aggregateOrderItems(order);
 		Delivery delivery = deliveryService.getDeliveryByOrderId(order.getId(), false);
 		if (delivery == null)
 			return null;
@@ -108,13 +116,14 @@ public class OrderService {
 		Order order = new Order();
 		for (int x = 0; x<items.size(); x++)
 			items.get(x).setOrder(order);
+		items.forEach(item -> item.setProductId(item.getProduct().getId()));
 		order.setCustomerId(customerId);
 		//Remove delivery info
 //		order.setDeliveryLocation("SOME RANDOM LOCATION");
 //		order.setStoreLocation("SOME RANDOM LOCATION");
 		//Remove Delivery Info
 		order.setItems(new HashSet<LineItem>(items));
-		order.setTotal(items.stream().mapToDouble(li -> li.getPrice()*(li.getQty()*1.0)).sum());
+		order.setTotal(items.stream().mapToDouble(li -> li.getProduct().getPrice()*(li.getQty()*1.0)).sum());
 		order.setStatus(OrderStatus.ACTIVE);
 //		order.setCreatedAt(new Date());
 		order = orderRepo.saveAndFlush(order);
@@ -150,5 +159,10 @@ public class OrderService {
 			throw new Exception ("Account number not valid");
 		}
 		return true;
+	}
+	protected void aggregateOrderItems(Order order) {
+		Set<Product> products = productClient.getProductsById(order.getItems().stream().map(item -> item.getProductId().toString()).collect(Collectors.joining(","))).getBody();
+		order.getItems().forEach(item -> item.setProduct(products.stream().filter(prd -> item.getProductId().equals(prd.getId())).findFirst().orElse(null)));
+		order.getItems().forEach(item -> item.getProduct().Incorporate());
 	}
 }
