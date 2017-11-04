@@ -163,6 +163,6 @@ public class OrderService {
 	protected void aggregateOrderItems(Order order) {
 		Set<Product> products = productClient.getProductsById(order.getItems().stream().map(item -> item.getProductId().toString()).collect(Collectors.joining(","))).getBody();
 		order.getItems().forEach(item -> item.setProduct(products.stream().filter(prd -> item.getProductId().equals(prd.getId())).findFirst().orElse(null)));
-		order.getItems().forEach(item -> item.getProduct().Incorporate());
+		order.getItems().forEach(item -> {if (item!=null)item.getProduct().Incorporate();});
 	}
 }

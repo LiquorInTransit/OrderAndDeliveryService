@@ -68,6 +68,7 @@ public class DeliveryService {
 		try {
 		delivery.setTrackingId(deliveryTrackingClient.createNewEvent(delivery.getId()));
 		} catch (Exception e) {
+			deliveryRepo.delete(delivery);
 			throw new Exception("Failed to creating tracking information");
 		}
 		//delivery.setTrackingURL(deliveryTrackingClient.createNewEvent(delivery.getId()));
