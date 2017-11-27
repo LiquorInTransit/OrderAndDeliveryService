@@ -46,7 +46,7 @@ public class OrderService {
 	
 	public List<Order> getAllOrdersForCustomer() {
 		Long customerId = accountClient.getCustomer().getId();								//add the CANCELLED status to the valid types
-		return orderRepo.findByCustomerIdAndStatusInOrderByCreatedAt(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES));
+		return orderRepo.findByCustomerIdAndStatusInOrderByCreatedAtDesc(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES));
 	}
 
 	public Order getOrderById(Long orderId, boolean verify) throws Exception{

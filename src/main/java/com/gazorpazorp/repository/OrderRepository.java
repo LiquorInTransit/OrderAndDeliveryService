@@ -10,7 +10,7 @@ import com.gazorpazorp.model.OrderStatus;
 
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-	public List<Order> findByCustomerIdAndStatusInOrderByCreatedAt(@Param("customerId") Long customerId, @Param("status") List<OrderStatus> terminatingStatuses);
+	public List<Order> findByCustomerIdAndStatusInOrderByCreatedAtDesc(@Param("customerId") Long customerId, @Param("status") List<OrderStatus> terminatingStatuses);
 	
 //	@Query("select o from Order o where o.customerId = ?1 and status != 'complete'")
 	public Order findByCustomerIdAndStatusNotIn(@Param("customerId") Long customerId, @Param("status") List<OrderStatus> terminatingStatuses);
