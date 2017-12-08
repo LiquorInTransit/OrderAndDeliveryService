@@ -14,13 +14,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gazorpazorp.client.AccountClient;
+import com.gazorpazorp.client.AuthenticationClient;
 import com.gazorpazorp.client.ProductAndStoreClient;
 import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.Delivery;
+import com.gazorpazorp.model.Driver;
 import com.gazorpazorp.model.LineItem;
 import com.gazorpazorp.model.Order;
 import com.gazorpazorp.model.OrderStatus;
 import com.gazorpazorp.model.Product;
+import com.gazorpazorp.model.User;
+import com.gazorpazorp.model.dto.DriverDto;
+import com.gazorpazorp.model.dto.OrderCurrentDto;
+import com.gazorpazorp.model.dtoMapper.AccountMapper;
+import com.gazorpazorp.model.dtoMapper.OrderMapper;
 import com.gazorpazorp.repository.LineItemRepository;
 import com.gazorpazorp.repository.OrderRepository;
 
@@ -36,9 +43,14 @@ public class OrderService {
 	AccountClient accountClient;
 	@Autowired
 	ProductAndStoreClient productClient;
+	@Autowired
+	AuthenticationClient authenticationClient;
 	
 	@Autowired
 	DeliveryService deliveryService;
+	
+	@Autowired
+	AccountMapper accountMapper;
 	
 	private final Logger logger = LoggerFactory.getLogger(OrderService.class);
 	
@@ -71,7 +83,7 @@ public class OrderService {
 		return order;
 	}
 	
-	public Order getCurrentOrder() {
+	public OrderCurrentDto getCurrentOrder() {
 		Long customerId = accountClient.getCustomer().getId();
 		Order order = orderRepo.findByCustomerIdAndStatusNotIn(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES));
 		if (order==null)
@@ -81,7 +93,19 @@ public class OrderService {
 		if (delivery == null)
 			return null;
 		order.setTrackingURL(delivery.getTrackingURL());
-		return order;
+		return aggregateOrderCurrent(order, delivery);
+		//return order;
+	}
+	
+	private OrderCurrentDto aggregateOrderCurrent(Order order, Delivery delivery) {
+		DriverDto driverDto = null;
+		if (delivery.getDriverId() != null) {
+			Driver driver = accountClient.getDriverById(delivery.getDriverId());
+			User user = authenticationClient.getUserById(driver.getUserId());
+			driverDto = accountMapper.driverAndUserToDriverDto(driver, user);
+		}
+		OrderCurrentDto dto = OrderMapper.INSTANCE.orderAndDriverDtoToOrderCurrentDto(order, driverDto);	
+		return dto;
 	}
 	
 	@Transactional(rollbackOn= {Exception.class} )

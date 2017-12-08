@@ -1,5 +1,8 @@
 package com.gazorpazorp.OrderAndDeliveryService;
 
+import javax.annotation.PostConstruct;
+
+import org.hsqldb.util.DatabaseManagerSwing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -40,11 +43,11 @@ public class OrderAndDeliveryServiceApplication {
 		return new CustomOAuth2FeignRequestInterceptor(context);
 	}
 	
-//	@PostConstruct
-//	public void getDbManager(){
-//	   DatabaseManagerSwing.main(
-//		new String[] { "--url", "jdbc:hsqldb:mem:test://localhost/test?characterEncoding=UTF-8", "--user", "SA", "--password", ""});
-//	}
+	@PostConstruct
+	public void getDbManager(){
+	   DatabaseManagerSwing.main(
+		new String[] { "--url", "jdbc:hsqldb:mem:test://localhost/test?characterEncoding=UTF-8", "--user", "SA", "--password", ""});
+	}
 
 	
 	//TODO: RE-IMPLEMENT THIS SO THAT WE DON'T NEED TO HARD CODE THE ACCESS-TOKEN-URI IN THE YAML OAUTH CLIENT CONFIG

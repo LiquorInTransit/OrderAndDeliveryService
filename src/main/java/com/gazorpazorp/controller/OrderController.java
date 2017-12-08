@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gazorpazorp.model.LineItem;
 import com.gazorpazorp.model.Order;
+import com.gazorpazorp.model.dto.OrderCurrentDto;
 import com.gazorpazorp.model.dto.OrderMinimalList;
 import com.gazorpazorp.model.dtoMapper.OrderMapper;
 import com.gazorpazorp.repository.OrderRepository;
@@ -64,15 +65,15 @@ public class OrderController {
 	
 	@GetMapping("/current")
 	@PreAuthorize("#oauth2.hasScope('orders')")
-	public ResponseEntity<Order> getCurrentOrder () throws Exception {
+	public ResponseEntity<OrderCurrentDto> getCurrentOrder () throws Exception {
 		return Optional.ofNullable(orderService.getCurrentOrder())
-				.map(o -> new ResponseEntity<Order>(o, HttpStatus.OK))
+				.map(o -> new ResponseEntity<OrderCurrentDto>(o, HttpStatus.OK))
 				.orElseThrow(() -> new Exception("No Current Order"));
 	}
 	
 	@DeleteMapping("/current")
 	@PreAuthorize("#oauth2.hasScope('orders')")
-	public ResponseEntity deleteCurrentOrder () throws Exception {
+	public ResponseEntity cancelCurrentOrder () throws Exception {
 		orderService.cancelCurrentOrder();
 		return new ResponseEntity(null, HttpStatus.OK);
 	}
