@@ -1,12 +1,13 @@
 package com.gazorpazorp.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gazorpazorp.model.Driver.Car;
 
 public class DriverDto {
 
 	private String firstName;
 	private String phone;
-	private String car;	
+	private Car car;	
 	private String profileImageId;
 	private String profileImageUrl;
 	
@@ -28,11 +29,11 @@ public class DriverDto {
 		this.phone = phone;
 	}
 
-	public String getCar() {
+	public Car getCar() {
 		return car;
 	}
 
-	public void setCar(String car) {
+	public void setCar(Car car) {
 		this.car = car;
 	}
 
