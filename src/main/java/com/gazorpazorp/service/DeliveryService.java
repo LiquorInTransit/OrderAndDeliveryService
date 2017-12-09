@@ -164,7 +164,7 @@ public class DeliveryService {
 			return null;
 //		if ( !deliveryRepo.findByDriverId(driver.getId()).stream().filter(d -> DeliveryStatus.ACTIVE.equals(d.getStatus())).collect(Collectors.toList()).isEmpty())
 //			return null;
-		List<Delivery> openDeliveries = deliveryRepo.findTopByDriverIdIsNullAndDriverHoldIsNullOrderByCreatedAtAsc(driver.getId());
+		List<Delivery> openDeliveries = deliveryRepo.findOpenDeliveries(driver.getId(), Arrays.asList(TERMINATING_DELIVERY_STATUSES));
 		Delivery delivery = openDeliveries.isEmpty()?null:openDeliveries.get(0);
 		if (delivery != null) {
 			delivery.setDriverHold(driver.getId());

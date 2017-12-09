@@ -36,7 +36,6 @@ public class CustomOAuth2FeignRequestInterceptor implements RequestInterceptor{
             logger.debug("Constructing Header {} for Token {}", headerName, tokenTypeName);
             template.header(headerName, String.format("%s %s", tokenTypeName, tokenString));
         }
-
     }
 
 }
