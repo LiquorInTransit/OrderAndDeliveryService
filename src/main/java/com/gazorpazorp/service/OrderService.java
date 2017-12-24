@@ -80,7 +80,17 @@ public class OrderService {
 //			return null;
 //		order.setTrackingURL(deliveryClient.getDeliveryByOrderId(order.getId()).getBody().getTrackingURL());
 		aggregateOrderItems(order);
+		
 		return order;
+	}
+	
+	public OrderCurrentDto getOrderCurrentDtoById(Long orderId, boolean verify) throws Exception {
+		Order order = getOrderById(orderId, verify);
+		Delivery delivery = deliveryService.getDeliveryByOrderId(order.getId(), false);
+		if (delivery == null)
+			return null;
+		order.setTrackingURL(delivery.getTrackingURL());
+		return aggregateOrderCurrent(order, delivery);
 	}
 	
 	public OrderCurrentDto getCurrentOrder() {

@@ -57,9 +57,9 @@ public class OrderController {
 	
 	@GetMapping("/{orderId}")
 	@PreAuthorize("#oauth2.hasScope('orders')")
-	public ResponseEntity getOrderById (@PathVariable Long orderId) throws Exception {
-		return Optional.ofNullable(orderService.getOrderById(orderId, true))
-				.map(o -> new ResponseEntity<Order>(o, HttpStatus.OK))
+	public ResponseEntity<OrderCurrentDto> getOrderById (@PathVariable Long orderId) throws Exception {
+		return Optional.ofNullable(orderService.getOrderCurrentDtoById(orderId, true))
+				.map(o -> new ResponseEntity<OrderCurrentDto>(o, HttpStatus.OK))
 				.orElseThrow(() -> new Exception("Customer not authorized to view this order"));//TODO: Change this back to 'Account does not exist' when the other TODO in the service is updated
 	}
 	
