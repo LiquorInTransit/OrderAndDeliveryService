@@ -1,6 +1,5 @@
 package com.gazorpazorp.controller;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gazorpazorp.model.Delivery;
 import com.gazorpazorp.model.Location;
+import com.gazorpazorp.model.dto.DeliveryList;
 import com.gazorpazorp.model.dto.DeliveryWithItemsDto;
 import com.gazorpazorp.model.dto.QuoteDto;
 import com.gazorpazorp.model.dtoMapper.QuoteMapper;
@@ -50,9 +50,9 @@ public class DeliveryController {
 	
 	@GetMapping("/history")
 	@PreAuthorize("#oauth2.hasScope('driver') and hasRole('DRIVER')")
-	public ResponseEntity getDriverDeliveryHistory () throws Exception {
+	public ResponseEntity<DeliveryList> getDriverDeliveryHistory () throws Exception {
 		return Optional.ofNullable(deliveryService.getDriverHistory())
-				.map(d -> new ResponseEntity<List<Delivery>>(d, HttpStatus.OK))
+				.map(d -> new ResponseEntity<DeliveryList>(new DeliveryList(d), HttpStatus.OK))
 				.orElseThrow(() -> new Exception("No past deliveries for driver."));
 	}
 	
