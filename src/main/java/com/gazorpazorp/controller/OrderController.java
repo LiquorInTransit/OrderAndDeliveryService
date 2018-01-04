@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.LineItem;
 import com.gazorpazorp.model.Order;
 import com.gazorpazorp.model.dto.OrderCurrentDto;
@@ -39,7 +40,6 @@ public class OrderController {
 	@PreAuthorize("#oauth2.hasScope('system')")
 	public ResponseEntity<Order> createOrder (@RequestBody List<LineItem> items, @RequestParam("quote") Long quoteId, @RequestParam("customerId") Long customerId) throws Exception {
 		return Optional.ofNullable(orderService.createOrder(items, quoteId, customerId))
-				.map(o -> new ResponseEntity<Order>(o, HttpStatus.OK))
 				.orElseThrow(() -> new Exception("Could not create order!"));
 	}
 	

@@ -11,10 +11,13 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.gazorpazorp.client.AccountClient;
 import com.gazorpazorp.client.AuthenticationClient;
+import com.gazorpazorp.client.PaymentClient;
 import com.gazorpazorp.client.ProductAndStoreClient;
 import com.gazorpazorp.model.Customer;
 import com.gazorpazorp.model.Delivery;
@@ -45,6 +48,8 @@ public class OrderService {
 	ProductAndStoreClient productClient;
 	@Autowired
 	AuthenticationClient authenticationClient;
+	@Autowired
+	PaymentClient paymentClient;
 	
 	@Autowired
 	DeliveryService deliveryService;
@@ -142,7 +147,7 @@ public class OrderService {
 	}
 	
 	
-	public Order createOrder (List<LineItem> items, Long quoteId, Long customerId) throws Exception {
+	public ResponseEntity<Order> createOrder (List<LineItem> items, Long quoteId, Long customerId) throws Exception {
 	//	Long customerId = accountClient.getCustomer().getId();
 		if (orderRepo.findByCustomerIdAndStatusNotIn(customerId, Arrays.asList(TERMINATING_ORDER_STATUSES)) != null) {
 			throw new Exception ("Customer already has an active order");
@@ -161,8 +166,18 @@ public class OrderService {
 		order.setStatus(OrderStatus.ACTIVE);
 //		order.setCreatedAt(new Date());
 		order = orderRepo.saveAndFlush(order);
+		
+//		//Process the payment
+//		HttpStatus status = paymentClient.processPayment(customer.getStripeId(), order.getId(), Integer.valueOf((int) (order.getTotal()*100))).getStatusCode();
+//		//If the payment didn't process correctly, then delete the order
+//		if (status != HttpStatus.OK) {
+//			//Delete the order, return a response body with the status.
+//			orderRepo.delete(order);
+//			return new ResponseEntity<>(status);
+//		}
+		
 	//Create delivery from quote
-	//If something failed, then delete the order we just created, and return null;
+	//If something failed, then delete the order we just created, and return /*null;*/ an empty responsebody with a 500 status
 		String trackingURL = "";
 		try {
 			trackingURL = deliveryService.createDelivery(quoteId, order.getId());	
@@ -170,11 +185,13 @@ public class OrderService {
 			e.printStackTrace();
 			//The delivery creation failed
 			orderRepo.deleteById(order.getId());
-			return null;
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
 		order.setTrackingURL(trackingURL);
-		return order;
+		return new ResponseEntity<>(order, HttpStatus.OK);
+		//return responseBody with the order
+		//return new ResponseBody<Order>(order, HttpStatus.OK);
 	}
 	
 	public Boolean completeOrder(Long orderId) throws Exception {

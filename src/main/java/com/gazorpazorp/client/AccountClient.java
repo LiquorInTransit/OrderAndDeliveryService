@@ -16,5 +16,7 @@ public interface AccountClient {
 	
 	@GetMapping(value="/internal/drivers/{id}", consumes="application/json")
 	Driver getDriverById(@PathVariable("id") Long id);
+	@GetMapping(value="/internal/customers/{id}")
+	Customer getCustomerById(@PathVariable("id") Long id);
 }
 

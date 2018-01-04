@@ -2,6 +2,7 @@ package com.gazorpazorp.model;
 
 public class Customer {
 	private Long id;
+	private String stripeId;
 	
 	private String firstName;
 	private String lastName;
@@ -55,7 +56,17 @@ public class Customer {
 	public void setLocation(Location location) {
 		this.location = location;
 	}
-	
-	
+
+	public String getStripeId() {
+		return stripeId;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setStripeId(String stripeId) {
+		this.stripeId = stripeId;
+	}	
 	
 }
