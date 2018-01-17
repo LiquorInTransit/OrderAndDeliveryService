@@ -200,8 +200,9 @@ public class DeliveryService {
 		trackingEvent.setLocation(location);
 		deliveryTrackingClient.createTrackingEvent(delivery.getTrackingId(), trackingEvent);
 
+		Quote quote = quoteRepo.findById(delivery.getQuoteId()).get();
 		//Process the payment
-		HttpStatus status = paymentClient.processPayment(customer.getStripeId(), driver.getStripeId(), order.getId(), Integer.valueOf((int) (order.getTotal()*100)+800)).getStatusCode();
+		HttpStatus status = paymentClient.processPayment(customer.getStripeId(), driver.getStripeId(), order.getId(), Integer.valueOf((int) (order.getTotal()*100)+((int)quote.getFee()*100))).getStatusCode();
 		//If the payment didn't process correctly, then cancel order
 		if (status != HttpStatus.OK) {
 			TrackingEvent te = new TrackingEvent();

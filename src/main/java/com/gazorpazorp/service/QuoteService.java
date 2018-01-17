@@ -18,7 +18,7 @@ import com.gazorpazorp.repository.QuoteRepository;
 public class QuoteService {
 	Logger logger = LoggerFactory.getLogger(QuoteService.class);
 	
-	private final double FEE = 5.00;
+	private final double FEE = 8.00;
 	private double feeMultiplier = 1.00;
 
 	@Autowired

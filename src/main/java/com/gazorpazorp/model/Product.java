@@ -74,7 +74,7 @@ public class Product implements Serializable{
 	
 	public void Incorporate() {
 		System.out.println("HERES THE BEFORE PRICE: " + this.price);
-		this.price = this.price/100.0;
+		this.price = this.price/100.0*1.029;
 	}
 
 
